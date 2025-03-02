@@ -1,0 +1,62 @@
+plugins {
+    id 'java'
+    id("com.gradleup.shadow") version "8.3.3"
+}
+
+group = 'ru.ilya.pl'
+version = '1.0-SNAPSHOT'
+
+tasks.shadowJar {
+    archiveBaseName.set("MFP")
+    archiveVersion.set("1.0.0")
+
+    relocate("dev.rollczi", "ru.ilya.pl.mfp.__relocated__.litecommands")
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "papermc-repo"
+        url = "https://repo.papermc.io/repository/maven-public/"
+    }
+    maven {
+        name = "sonatype"
+        url = "https://oss.sonatype.org/content/groups/public/"
+    }
+    maven {
+        url = "https://repo.panda-lang.org/releases"
+    }
+}
+
+dependencies {
+compileOnly "io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT"
+    implementation("dev.rollczi:litecommands-bukkit:3.4.3")
+    implementation("dev.rollczi:litecommands-adventure:3.4.1")
+}
+
+def targetJavaVersion = 17
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release.set(targetJavaVersion)
+    }
+}
+
+processResources {
+    def props = [version: version]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand props
+    }
+}

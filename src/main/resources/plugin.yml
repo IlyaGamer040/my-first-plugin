@@ -1,0 +1,4 @@
+name: mfp
+version: '${version}'
+main: ru.ilya.pl.mfp.Main
+api-version: '1.20'
